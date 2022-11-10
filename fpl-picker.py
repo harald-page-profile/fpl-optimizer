@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import requests
 import urllib
+import datetime
 import load_data as ld
 import optimize_team as ot
 import expected_value as ev
@@ -10,7 +11,7 @@ import expected_value as ev
 st.title('FPL team generator')
 
 @st.cache(allow_output_mutation=True)
-def get_FPL_data():
+def get_FPL_data(current_date):
     players = ld.get_play_data()
     cs = ld.get_cs_data()
     eg = ld.get_eg_data()
@@ -52,17 +53,12 @@ col1,col2 = st.columns(2)
 
 
 try:
-    df = get_FPL_data()
+    df = get_FPL_data(datetime.datetime.now().date())
     df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4, axis=1)
     df['future_eg'] = df.apply(lambda x: x.gw2 + x.gw3 + x.gw4, axis=1)
     df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
     df['future_eg'] = df.apply(lambda x: (x.future_eg / max(df['future_eg'])),axis=1)
     df['future_good_games'] = df.apply(lambda x: (x.good_games / max(df['good_games'])),axis=1)
-    df['expected'] = df.apply(ev.expected_score, axis=1)
-    
-    
-    
-    expected_scores = df['expected']
     prices = df['now_cost'] / 10
     positions = df['element_type']
     clubs = df['team_code']
@@ -79,10 +75,15 @@ try:
     if len(set(players + sub_players))!=15:
         st.info("Please select a full team of players")
     else:
-        st.info("Garbage team...")
+        #df['excluded'] = df.display.isin(exclude)
+        df['expected'] = df.apply(ev.expected_score, axis=1)
+        #df['expected'] = df.apply(lambda x: 0 if x.excluded else x.expected,axis=1)
+        expected_scores = df['expected']
+    
+        #st.info("Garbage team...")
         num1,num2 = st.columns(2)
-        nsubs = num1.number_input('Choose number of subs',1)
-        budget = num2.number_input('Choose budget in millions',100)
+        nsubs = num1.number_input('Choose number of subs',value=1)
+        budget = num2.number_input('Choose budget in millions',value=100)
         my_team = pd.DataFrame(data = {'display': players + sub_players,'status':(["starting"]*len(players)) + (["bench"]*len(sub_players))})
 
         _team = pd.merge(df,my_team,on = "display",how='left')

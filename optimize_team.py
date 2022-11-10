@@ -56,7 +56,7 @@ def select_team(expected_scores, prices, positions, clubs, my_team = [], my_subs
         model += sum(decisions[i] + sub_decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
 
     # My players constraints
-    model += (sum(decisions[i] for i in range(num_players) if i in my_team) + sum(sub_decisions[i] for i in range(num_players) if i in my_subs)) == (len(my_team) + len(my_subs)) - to_sub
+    model += (sum(decisions[i] for i in range(num_players) if i in my_team + my_subs) + sum(sub_decisions[i] for i in range(num_players) if i in my_team + my_subs)) == (len(my_team) + len(my_subs)) - to_sub
     # My subs constraints
 
     model += sum(decisions) == 11  # total team size
