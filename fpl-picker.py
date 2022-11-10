@@ -10,6 +10,11 @@ import expected_value as ev
 
 st.title('FPL team generator')
 
+default_starters = []
+#['Pope pos:1', 'Dier pos:2', 'Schär pos:2', 'Trippier pos:2', 'Cancelo pos:2', 'Andreas pos:3', 'Trossard pos:3', 'Saka pos:3', 'Foden pos:3', 'Haaland pos:4', 'Kane pos:4']
+default_subs = []
+#['Sánchez pos:1', 'Edouard pos:4', 'Castagne pos:2', 'Højbjerg pos:3']
+
 @st.cache(allow_output_mutation=True)
 def get_FPL_data(current_date):
     players = ld.get_play_data()
@@ -37,20 +42,10 @@ def get_FPL_data(current_date):
     
     return df
 
-def highlight_players(s):
-    return ['background-color: lightgreen']*len(s) if s.Status=="starting" else ['']*len(s)
-
-
-def highlight_survived(s):
-    return ['background-color: lightgreen']*len(s) if s.web_name == 'White' else ['']*len(s)
-
-def color_survived(val):
-    color = 'green' if val else 'red'
-    return f'background-color: {color}'
-
+def highlight_players(s,cap):
+    return ['background-color: lightgreen']*len(s) if s.Name==cap else ['']*len(s)
 
 col1,col2 = st.columns(2)
-
 
 try:
     df = get_FPL_data(datetime.datetime.now().date())
@@ -67,17 +62,15 @@ try:
     df['display'] = df["web_name"] + " pos:" + df["element_type"].astype(str)
     
     players = col1.multiselect(
-        "Choose your starters", list(df.display), []
+        "Choose your starters", list(df.display), default = default_starters
     )
     sub_players = col2.multiselect(
-        "Choose your subs", list(df.display), []
+        "Choose your subs", list(df.display), default = default_subs
     )
     if len(set(players + sub_players))!=15:
         st.info("Please select a full team of players")
     else:
-        #df['excluded'] = df.display.isin(exclude)
         df['expected'] = df.apply(ev.expected_score, axis=1)
-        #df['expected'] = df.apply(lambda x: 0 if x.excluded else x.expected,axis=1)
         expected_scores = df['expected']
     
         #st.info("Garbage team...")
@@ -100,13 +93,12 @@ try:
             pred_subs = [names[i] for i in range(df.shape[0]) if sub_decisions[i].value()>0]
             pred_pos = [positions[i] for i in range(df.shape[0]) if decisions[i].value()>0]
             pred_pos += [positions[i] for i in range(df.shape[0]) if sub_decisions[i].value()>0]
-            
+            captain = [names[i] for i in range(df.shape[0]) if captain_decisions[i].value()>0][0]
             status = ["starting"]*len(pred_start) + ["bench"]*len(pred_subs)
             pred_team = pd.DataFrame({"name": pred_start + pred_subs,
                                     "status":status, "position":pred_pos})
             res = pd.merge(pred_team, df, left_on = ["name","position"], right_on=["web_name","element_type"])
             res["now_cost"] = res["now_cost"]/10
-
             tr_in = [p for p in res[res.status_x.isin(['starting','bench'])]['display'].values if p not in (players + sub_players)]
             tr_out = [p for p in (players + sub_players) if p not in res[res.status_x.isin(['starting','bench'])]['display'].values]
 
@@ -120,15 +112,11 @@ try:
             
             res = res[["Name","Status","EG W+1","ECS W+1","EG W+2","ECS W+2",
             "good_games","position","now_cost","total_points","team"]]
-            res.style.apply(highlight_players, axis=1)
-            st.dataframe(res.sort_values(['Status', 'total_points'],
-                    ascending = [False, False]))
-            
+            res = res.sort_values(['Status', 'total_points'],ascending = [False, False])
+            st.dataframe(res.style.apply(highlight_players,cap=captain, axis=1))
             st.text("Transfer in: " + ", ".join(tr_in))
             st.text("Transfer out: " + ", ".join(tr_out))
             
-        #else:
-        #    st.write('Goodbye')
 except:
     st.error(
         """
