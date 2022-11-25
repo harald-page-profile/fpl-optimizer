@@ -10,10 +10,10 @@ import expected_value as ev
 
 st.title('FPL team generator')
 
-default_starters = []
-#['Pope pos:1', 'Dier pos:2', 'Schär pos:2', 'Trippier pos:2', 'Cancelo pos:2', 'Andreas pos:3', 'Trossard pos:3', 'Saka pos:3', 'Foden pos:3', 'Haaland pos:4', 'Kane pos:4']
-default_subs = []
-#['Sánchez pos:1', 'Edouard pos:4', 'Castagne pos:2', 'Højbjerg pos:3']
+#default_starters = []
+default_starters = ['Pope pos:1', 'Dier pos:2', 'Schär pos:2', 'Trippier pos:2', 'Cancelo pos:2', 'Andreas pos:3', 'Trossard pos:3', 'Saka pos:3', 'Foden pos:3', 'Haaland pos:4', 'Kane pos:4']
+#default_subs = []
+default_subs = ['Sánchez pos:1', 'Edouard pos:4', 'Castagne pos:2', 'Højbjerg pos:3']
 
 @st.cache(allow_output_mutation=True)
 def get_FPL_data(current_date):
@@ -48,7 +48,8 @@ def highlight_players(s,cap):
 col1,col2 = st.columns(2)
 
 try:
-    df = get_FPL_data(datetime.datetime.now().date())
+    df = get_FPL_data(datetime.date(2022, 1, 1))
+    #df = get_FPL_data(datetime.datetime.now().date())
     df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4, axis=1)
     df['future_eg'] = df.apply(lambda x: x.gw2 + x.gw3 + x.gw4, axis=1)
     df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
@@ -73,7 +74,6 @@ try:
         df['expected'] = df.apply(ev.expected_score, axis=1)
         expected_scores = df['expected']
     
-        #st.info("Garbage team...")
         num1,num2 = st.columns(2)
         nsubs = num1.number_input('Choose number of subs',value=1)
         budget = num2.number_input('Choose budget in millions',value=100)
