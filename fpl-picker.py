@@ -8,6 +8,7 @@ import load_data as ld
 import optimize_team as ot
 import expected_value as ev
 
+
 st.title('FPL team generator')
 
 #default_starters = []
@@ -42,6 +43,7 @@ def get_FPL_data(current_date):
     
     return df
 
+
 def highlight_players(s,cap):
     return ['background-color: lightgreen']*len(s) if s.Name==cap else ['']*len(s)
 
@@ -75,7 +77,7 @@ try:
         expected_scores = df['expected']
     
         num1,num2 = st.columns(2)
-        nsubs = num1.number_input('Choose number of subs',value=1)
+        nsubs = num1.number_input('Choose number of transfers',value=1)
         budget = num2.number_input('Choose budget in millions',value=100)
         my_team = pd.DataFrame(data = {'display': players + sub_players,'status':(["starting"]*len(players)) + (["bench"]*len(sub_players))})
 
@@ -109,14 +111,15 @@ try:
                         'gw4','cs_gw4',"good_games","position","now_cost","total_points","team"]]
             res.columns.values[0:8] = ["Name","Status","EG W+1","ECS W+1",
                                     "EG W+2","ECS W+2","EG W+3","ECS W+3"]
-            
             res = res[["Name","Status","EG W+1","ECS W+1","EG W+2","ECS W+2",
             "good_games","position","now_cost","total_points","team"]]
             res = res.sort_values(['Status', 'total_points'],ascending = [False, False])
             st.dataframe(res.style.apply(highlight_players,cap=captain, axis=1))
             st.text("Transfer in: " + ", ".join(tr_in))
             st.text("Transfer out: " + ", ".join(tr_out))
-            
+            #plt.scatter(x=res["total_points"].values,y=res["good_games"].values, s = res["now_cost"].values)
+
+                        
 except:
     st.error(
         """
