@@ -50,8 +50,8 @@ def highlight_players(s,cap):
 col1,col2 = st.columns(2)
 
 try:
-    df = get_FPL_data(datetime.date(2022, 1, 1))
-    #df = get_FPL_data(datetime.datetime.now().date())
+    #df = get_FPL_data(datetime.date(2022, 1, 1))
+    df = get_FPL_data(datetime.datetime.now().date())
     df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4, axis=1)
     df['future_eg'] = df.apply(lambda x: x.gw2 + x.gw3 + x.gw4, axis=1)
     df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)

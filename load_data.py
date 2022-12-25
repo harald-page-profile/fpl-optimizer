@@ -23,6 +23,7 @@ def scrape(cells):
     
 def remove_char(string):
     import re
+    string = string.replace("2X!","")
     string = re.sub("[A-Za-z]", "", string);
     return string
 
@@ -67,13 +68,6 @@ def get_eg_data():
     soup = BeautifulSoup(r.text, 'html.parser')
     table = soup.find('table')
     cells = table.find_all("td")
-
-    def scrape(cells):
-        lizt = []
-        for cell in cells:
-            text = cell.text.strip()
-            lizt.append(text)
-        return(lizt)
         
     output = scrape(cells)
 
@@ -85,11 +79,6 @@ def get_eg_data():
     output = output.drop(header_row)
     output = output.reset_index(drop = True)
     output.columns = ["team", "gw2", "gw3", "gw4", "gw5", "gw6", "total"]
-
-    def remove_char(string):
-        import re
-        string = re.sub("[A-Za-z]", "", string);
-        return string
 
     output.gw2 = output.gw2.apply(remove_char)
     output.gw2 = output.gw2.apply(float)
