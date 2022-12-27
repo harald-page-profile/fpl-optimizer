@@ -12,9 +12,9 @@ import expected_value as ev
 st.title('FPL team generator')
 
 #default_starters = []
-default_starters = ['Pope pos:1', 'Dier pos:2', 'Schär pos:2', 'Trippier pos:2', 'Cancelo pos:2', 'Andreas pos:3', 'Trossard pos:3', 'Saka pos:3', 'Foden pos:3', 'Haaland pos:4', 'Kane pos:4']
+default_starters = ['Pope pos:1', 'James pos:2', 'White pos:2', 'Trippier pos:2', 'Cancelo pos:2', 'Almirón pos:3', 'Mount pos:3', 'Martinelli pos:3', 'Foden pos:3', 'Haaland pos:4', 'Kane pos:4']
 #default_subs = []
-default_subs = ['Sánchez pos:1', 'Edouard pos:4', 'Castagne pos:2', 'Højbjerg pos:3']
+default_subs = ['Ward pos:1', 'Edouard pos:4', 'Castagne pos:2', 'Andreas pos:3']
 
 @st.cache(allow_output_mutation=True)
 def get_FPL_data(current_date):
