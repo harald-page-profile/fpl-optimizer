@@ -24,6 +24,7 @@ def select_team(expected_scores, prices, positions, clubs, my_team = [], my_subs
     model += sum((captain_decisions[i] + decisions[i] + sub_decisions[i]*sub_factor) * expected_scores[i]
                  for i in range(num_players)), "Objective"
 
+
     # cost constraint
     model += sum((decisions[i] + sub_decisions[i]) * prices[i] for i in range(num_players)) <= total_budget  # total cost
 
@@ -55,16 +56,18 @@ def select_team(expected_scores, prices, positions, clubs, my_team = [], my_subs
     for club_id in np.unique(clubs):
         model += sum(decisions[i] + sub_decisions[i] for i in range(num_players) if clubs[i] == club_id) <= 3  # max 3 players
 
-    # My players constraints
-    model += (sum(decisions[i] for i in range(num_players) if i in my_team + my_subs) + sum(sub_decisions[i] for i in range(num_players) if i in my_team + my_subs)) == (len(my_team) + len(my_subs)) - to_sub
-    # My subs constraints
-
-    model += sum(decisions) == 11  # total team size
+    model += sum(decisions) == 11  # starting team size
     model += sum(captain_decisions) == 1  # 1 captain
+    model += sum(sub_decisions) == 4 # bench size
+
+    # My players contraints
+    model += sum(decisions[i] for i in range(num_players) if i not in my_team + my_subs) + sum(sub_decisions[i] for i in range(num_players) if i not in my_team + my_subs)<=to_sub
+
 
     for i in range(num_players):
         model += (decisions[i] - captain_decisions[i]) >= 0  # captain must also be on team
-        model += (decisions[i] + sub_decisions[i]) <= 1  # subs must not be on team
+        model += (decisions[i] + sub_decisions[i]) <= 1  # subs must not be starting
+
 
     model.solve()
     print("Total expected score = {}".format(model.objective.value()))
