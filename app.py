@@ -43,14 +43,14 @@ st.markdown(
         width: 18%;
         #border: 3px solid green;
         display:inline-block;
-        font-size:1.5vw;
+        font-size:min(1.5vw,20px);
     }
     .playercard > img {
         width: 40%;
     }
     .pname {
       background: #37003c;
-    text-align: center;
+        text-align: center;
         margin: auto;
       color: white;
       width: 90%;
