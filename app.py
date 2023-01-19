@@ -6,17 +6,75 @@ import fetch_data as fd
 import datetime
 
 
-#https://fantasy.premierleague.com/img/favicons/favicon-32x32.png
+st.set_page_config(page_title="FPL-Optimizer",page_icon="https://fantasy.premierleague.com/img/favicons/favicon-32x32.png")
+
 
 st.markdown(
     """
     <style>
+    .pitch {
+        background:url(https://fantasy.premierleague.com/static/media/pitch-default.dab51b01.svg);
+          background-position: center top;
+          background-size: 100%;
+        background-repeat: no-repeat;
+    }
+    .row {
+        text-align: center;
+    }
+    .row-out {
+        background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(255,1,1,0.5838414634146342) 0%, rgba(255,255,255,1) 100%);
+    }
+    .row-in {
+        background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(70,185,80,0.5838414634146342) 0%, rgba(255,255,255,1) 100%);
+    }
+    .subrow {
+        text-align: center;
+        background-color:rgba(114, 207, 159, 0.9);
+    }
     .css-1n76uvr > div > .css-1n76uvr {
         background: #f7f6f5;
-        #background-image: url("https://static.vecteezy.com/system/resources/previews/003/715/625/original/football-field-or-soccer-field-background-green-grass-court-for-create-soccer-game-vector.jpg");
         margin: 5px 0px 0px 0px;
         border-radius: 5px;
-    }</style>"""
+    }
+    .playercard {
+      font-family: "PremierSans-Regular", Arial, "Helvetica Neue", Helvetica, "sans-serif";
+        text-align: center;
+        margin: auto;
+        width: 18%;
+        #border: 3px solid green;
+        display:inline-block;
+        font-size:1.5vw;
+    }
+    .playercard > img {
+        width: 40%;
+    }
+    .pname {
+      background: #37003c;
+    text-align: center;
+        margin: auto;
+      color: white;
+      width: 90%;
+    }
+    .tout {
+      background: #37003c;
+        text-align: left;
+        margin: auto;
+      color: white;
+    }
+    .tin {
+      background: #37003c;
+        text-align: left;
+        margin: auto;
+      color: white;
+    }
+    .pteam {
+      background: #46c584;
+      text-align: center;
+        margin: auto;
+      border-radius:0px 0px 5px 5px;
+      width: 90%;
+    }
+    </style>"""
     ,
     unsafe_allow_html=True
 )
@@ -25,7 +83,6 @@ st.markdown(
 def fetch_data(inp):
     ctx = fd.create_connection()
     df = fd.fetch_data(ctx)
-    print(df.head(10))
     return df
     
 
@@ -38,6 +95,95 @@ def filter_choices(x):
         return "transfer out"
     else:
         return "not in team"
+
+
+def generate_pitch(df):
+    pitch = '<div class="pitch">'
+    row = '<div class="row">'
+    for k,each in df[df.status=="starting"][df.p_position==1].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    pitch += row
+    row = '<div class="row">'
+    for k,each in df[df.status=="starting"][df.p_position==2].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    pitch += row
+    row = '<div class="row">'
+    for k,each in df[df.status=="starting"][df.p_position==3].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    pitch += row
+    row = '<div class="row">'
+    for k,each in df[df.status=="starting"][df.p_position==4].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    pitch += row
+    row = '<div class="subrow">'
+    for k,each in df[df.status=="bench"].sort_values(["p_position"]).iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    pitch += row
+    pitch += '</div>'
+    return pitch
+
+
+def generate_transfers(df):
+    transfers = '<div>'
+    row = '<div class="tout">Transfer out:</div><div class="row-out">'
+    for k,each in df[df.choice=="transfer out"].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    transfers += row
+    row = '<div class="tin">Transfer in:</div><div class="row-in">'
+    for k,each in df[df.choice=="transfer in"].iterrows():
+        row+= ' '.join([
+        '<div class="playercard">',
+        '<image src="' + each['shirt'] +'">',
+        '<div class="pname">' + each['name'] + '</div>',
+        '<div class="pteam">' + each['team_name'] + '</div>',
+        '</div>'
+        ])
+    row+='</div>'
+    transfers += row
+    transfers +='</div>'
+    return transfers
 
     
 df = fetch_data(datetime.datetime.now().date())
@@ -61,8 +207,7 @@ expected_scores = df['expected']
 
 
 st.title('FPL team generator')
-
-z = st.container()
+z = st.expander("Pick team:")
 
 z.write("")
 _,g1,g2,_ = z.columns([4,4,4,4])
@@ -70,7 +215,11 @@ _,d1,d2,_ = z.columns([1,10,4,1])
 _,m1,m2,_ = z.columns([1,10,4,1])
 _,f1,f2,_ = z.columns([2,8,4,2])
 z.write("")
-num1,num2,btn = st.columns(3)
+num1,num2 = z.columns(2)
+btn = z.container()
+
+opt_btn = st.button("Generate optimal team")
+v_pitch = st.container()
 
 
 stg = g1.multiselect("Starting goalie",list(df[df.p_position==1].name))
@@ -85,6 +234,8 @@ sum = m2.multiselect("Sub midfielders",[each for each in df[df.p_position==3].na
 stf = f1.multiselect("Starting forwards",list(df[df.p_position==4].name))
 suf = f2.multiselect("Sub forwards",[each for each in df[df.p_position==4].name if each not in stf])
 
+
+
 _names = stg + sug + std + sud + stm + sum + stf + suf
 _positions = ([1] * len(stg + sug)) + \
             ([2] * len(std + sud)) + \
@@ -95,7 +246,6 @@ _statuses = (["starting"] * len(stg)) + (["bench"] * len(sug)) + \
             (["starting"] * len(stm)) + (["bench"] * len(sum)) + \
             (["starting"] * len(stf)) + (["bench"] * len(suf))
 
-#st.dataframe(select_df)
 
 if(len(set(stg + sug))==2 and len(set(std + sud))==5 and len(set(stm + sum))==5 and len(set(stf + suf))==3):
 
@@ -138,4 +288,40 @@ if(len(set(stg + sug))==2 and len(set(std + sud))==5 and len(set(stm + sum))==5 
         res["choice"] = res.apply(filter_choices, axis=1)
         res["captain"] = res.apply(lambda x: (x["name"]==captain and x["position_x"]== captain_pos),axis=1)
         res = res[res.choice.isin(["transfer in","transfer out","keep"])]
-        st.dataframe(res[["name","p_position","choice","status_x","captain","now_cost","total_points","expected"]].sort_values(['expected'],ascending = [False]))
+        #st.dataframe(res[["name","p_position","choice","status_x","captain","now_cost","total_points","expected"]].sort_values(['expected'],ascending = [False]))
+        #st.dataframe(res)
+        res = res.rename(columns={"status_x": "status"})
+        pitch = generate_pitch(res)
+        v_pitch.markdown(pitch,unsafe_allow_html=True)
+        trans = generate_transfers(res)
+        v_pitch.markdown(trans,unsafe_allow_html=True)
+
+
+
+if(opt_btn):
+    decisions, captain_decisions,sub_decisions = ot.select_team(
+                                            expected_scores,
+                                            prices,
+                                            positions,
+                                            clubs,
+                                            [],
+                                            [],
+                                            15,
+                                            100)
+    pred_start = [names[i] for i in range(df.shape[0]) if decisions[i].value()>0]
+    pred_subs = [names[i] for i in range(df.shape[0]) if sub_decisions[i].value()>0]
+    pred_pos = [positions[i] for i in range(df.shape[0]) if decisions[i].value()>0]
+    pred_pos += [positions[i] for i in range(df.shape[0]) if sub_decisions[i].value()>0]
+    captain = [names[i] for i in range(df.shape[0]) if captain_decisions[i].value()>0][0]
+    captain_pos = [positions[i] for i in range(df.shape[0]) if captain_decisions[i].value()>0][0]
+    status = ["starting"]*len(pred_start) + ["bench"]*len(pred_subs)
+    pred_team = pd.DataFrame({"name": pred_start + pred_subs,
+                            "status":status,
+                            "position":pred_pos})
+    pred_team['position']=pred_team['position'].astype(int)
+    res = pd.merge(df, pred_team,how='left', left_on = ["name","p_position"], right_on=["name","position"])
+    res["now_cost"] = res["now_cost"]/10
+    res["captain"] = res.apply(lambda x: (x["name"]==captain and x["position"]== captain_pos),axis=1)
+    res = res[res.status.isin(["starting","bench"])]
+    pitch = generate_pitch(res)
+    v_pitch.markdown(pitch,unsafe_allow_html=True)
