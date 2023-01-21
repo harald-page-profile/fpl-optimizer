@@ -43,7 +43,8 @@ st.markdown(
         width: 18%;
         #border: 3px solid green;
         display:inline-block;
-        font-size:min(1.5vw,20px);
+        font-size:min(2.5vw,20px);
+        font-weight:bold;
     }
     .playercard > img {
         width: 40%;
@@ -190,19 +191,11 @@ df = fetch_data(datetime.datetime.now().date())
 df.columns = [x.lower() for x in df.columns]
 df['good_games'] = df['good_games'].astype(int)
 df['now_cost'] = df['now_cost'].astype(int)
-
-df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4, axis=1)
-df['future_eg'] = df.apply(lambda x: x.eg_gw2 + x.eg_gw3 + x.eg_gw4, axis=1)
-df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
-df['future_eg'] = df.apply(lambda x: (x.future_eg / max(df['future_eg'])),axis=1)
 df['future_good_games'] = df.apply(lambda x: (x.good_games / max(df['good_games'])),axis=1)
 prices = df['now_cost'] / 10
 positions = df['p_position']
 clubs = df['team_name']
 names = df['name']
-df['expected'] = df.apply(ev.expected_score, axis=1)
-expected_scores = df['expected']
-
 
 
 
@@ -217,6 +210,38 @@ _,f1,f2,_ = z.columns([2,8,4,2])
 z.write("")
 num1,num2 = z.columns(2)
 btn = z.container()
+y = st.expander("Choose expected source:")
+evb = y.radio(
+    "Expected value source",
+    ('Custom 1gw', 'Custom 3gw', 'Custom 5gw', 'FPL-API'),
+    horizontal=True)
+if(evb=='Custom 1gw'):
+    df['future_cs'] = df.apply(lambda x: x.cs_gw2, axis=1)
+    df['future_eg'] = df.apply(lambda x: x.eg_gw2, axis=1)
+    df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
+    df['future_eg'] = df.apply(lambda x: (x.future_eg / max(df['future_eg'])),axis=1)
+    df['expected'] = df.apply(ev.expected_score, axis=1)
+    expected_scores = df['expected']
+
+elif(evb=='Custom 3gw'):
+    df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4, axis=1)
+    df['future_eg'] = df.apply(lambda x: x.eg_gw2 + x.eg_gw3 + x.eg_gw4, axis=1)
+    df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
+    df['future_eg'] = df.apply(lambda x: (x.future_eg / max(df['future_eg'])),axis=1)
+    df['expected'] = df.apply(ev.expected_score, axis=1)
+    expected_scores = df['expected']
+
+elif(evb=='Custom 5gw'):
+    df['future_cs'] = df.apply(lambda x: x.cs_gw2 + x.cs_gw3 + x.cs_gw4 + x.cs_gw5 + x.cs_gw6 , axis=1)
+    df['future_eg'] = df.apply(lambda x: x.eg_gw2 + x.eg_gw3 + x.eg_gw4 + x.cs_gw5 + x.cs_gw6 , axis=1)
+    df['future_cs'] = df.apply(lambda x: (x.future_cs / max(df['future_cs'])),axis=1)
+    df['future_eg'] = df.apply(lambda x: (x.future_eg / max(df['future_eg'])),axis=1)
+    df['expected'] = df.apply(ev.expected_score, axis=1)
+    expected_scores = df['expected']
+elif(evb=='FPL-API'):
+    df['expected'] = df['fpl_ept'] + df['fpl_epn']
+    expected_scores = df['expected']
+
 
 opt_btn = st.button("Generate optimal team")
 v_pitch = st.container()
