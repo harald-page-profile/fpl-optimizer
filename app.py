@@ -8,10 +8,16 @@ import datetime
 
 st.set_page_config(page_title="FPL-Optimizer",page_icon="https://fantasy.premierleague.com/img/favicons/favicon-32x32.png")
 
+with open('image.svg', 'r') as file:
+    data = file.read().replace('\n', '')
+st.markdown(data,unsafe_allow_html=True)
 
 st.markdown(
     """
     <style>
+    svg {
+          width:100%;
+    }
     .pitch {
         background:url(https://fantasy.premierleague.com/static/media/pitch-default.dab51b01.svg);
           background-position: center top;
@@ -79,6 +85,7 @@ st.markdown(
     ,
     unsafe_allow_html=True
 )
+
 
 @st.cache(allow_output_mutation=True)
 def fetch_data(inp):
@@ -186,6 +193,7 @@ def generate_transfers(df):
     transfers +='</div>'
     return transfers
 
+
     
 df = fetch_data(datetime.date.today() + datetime.timedelta(days=1))
 df.columns = [x.lower() for x in df.columns]
@@ -199,7 +207,6 @@ names = df['name']
 
 
 
-st.title('FPL team generator')
 z = st.expander("Pick team:")
 
 z.write("")
@@ -246,19 +253,17 @@ elif(evb=='FPL-API'):
 opt_btn = st.button("Generate optimal team")
 v_pitch = st.container()
 
+stg = g1.multiselect("Starting goalie",list(df[df.p_position==1].name), max_selections=1)
+sug = g2.multiselect("Sub goalie",[each for each in df[df.p_position==1].name if each not in stg],max_selections=1)
 
-stg = g1.multiselect("Starting goalie",list(df[df.p_position==1].name))
-sug = g2.multiselect("Sub goalie",[each for each in df[df.p_position==1].name if each not in stg])
+std = d1.multiselect("Starting defenders",list(df[df.p_position==2].name),max_selections=5)
+sud = d2.multiselect("Sub defenders",[each for each in df[df.p_position==2].name if each not in std],max_selections=5)
 
-std = d1.multiselect("Starting defenders",list(df[df.p_position==2].name))
-sud = d2.multiselect("Sub defenders",[each for each in df[df.p_position==2].name if each not in std])
+stm = m1.multiselect("Starting midfielders",list(df[df.p_position==3].name),max_selections=5)
+sum = m2.multiselect("Sub midfielders",[each for each in df[df.p_position==3].name if each not in stm],max_selections=5)
 
-stm = m1.multiselect("Starting midfielders",list(df[df.p_position==3].name))
-sum = m2.multiselect("Sub midfielders",[each for each in df[df.p_position==3].name if each not in stm])
-
-stf = f1.multiselect("Starting forwards",list(df[df.p_position==4].name))
-suf = f2.multiselect("Sub forwards",[each for each in df[df.p_position==4].name if each not in stf])
-
+stf = f1.multiselect("Starting forwards",list(df[df.p_position==4].name),max_selections=3)
+suf = f2.multiselect("Sub forwards",[each for each in df[df.p_position==4].name if each not in stf],max_selections=3)
 
 
 _names = stg + sug + std + sud + stm + sum + stf + suf
