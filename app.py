@@ -187,7 +187,7 @@ def generate_transfers(df):
     return transfers
 
     
-df = fetch_data(datetime.datetime.now().date())
+df = fetch_data(datetime.date.today() + datetime.timedelta(days=1))
 df.columns = [x.lower() for x in df.columns]
 df['good_games'] = df['good_games'].astype(int)
 df['now_cost'] = df['now_cost'].astype(int)
