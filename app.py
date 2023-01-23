@@ -15,6 +15,9 @@ st.markdown(data,unsafe_allow_html=True)
 st.markdown(
     """
     <style>
+    .css-1dp5vir {
+        background-image: linear-gradient(to left, #ff2882, #973cfe);
+    }
     svg {
           width:100%;
     }
