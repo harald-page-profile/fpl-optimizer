@@ -108,6 +108,18 @@ def filter_choices(x):
         return "not in team"
 
 
+def assert_team(df):
+    asserts = {
+        'bench_ok': len(df[df.status=='bench'])==4,
+        'start_ok' : len(df[df.status=='starting'])==11,
+        'teams_ok' : (df.groupby(["team_name"]).count().max()[0]<=3),
+        'goalies_ok' : len(df[df.p_position==1])==2,
+        'defs_ok' : len(df[df.p_position==2])==5,
+        'mids_ok' : len(df[df.p_position==3])==5,
+        'fwds_ok' : len(df[df.p_position==4])==3
+    }
+    return asserts
+
 def generate_pitch(df):
     pitch = '<div class="pitch">'
     row = '<div class="row">'
@@ -196,6 +208,27 @@ def generate_transfers(df):
     transfers +='</div>'
     return transfers
 
+def get_params(params,df):
+    players = {'t1_1':[],'t1_2':[],'t2_1':[],'t2_2':[],'t3_1':[],'t3_2':[],'t4_1':[],'t4_2':[]}
+    for k,v in params.items():
+        if(k in players.keys()):
+            pos = k.split('_')[0][1]
+            players[k]=[each for each in params[k] if each in list(df[df.p_position==int(pos)].name)]
+    return players
+
+def create_params(df):
+    st.experimental_set_query_params(
+        t1_1 = list(df[df.p_position==1][df.status=='starting'].name),
+        t1_2 = list(df[df.p_position==1][df.status=='bench'].name),
+        t2_1 = list(df[df.p_position==2][df.status=='starting'].name),
+        t2_2 = list(df[df.p_position==2][df.status=='bench'].name),
+        t3_1 = list(df[df.p_position==3][df.status=='starting'].name),
+        t3_2 = list(df[df.p_position==3][df.status=='bench'].name),
+        t4_1 = list(df[df.p_position==4][df.status=='starting'].name),
+        t4_2 = list(df[df.p_position==4][df.status=='bench'].name)
+    )
+    return True
+
 
     
 df = fetch_data(datetime.date.today() + datetime.timedelta(days=1))
@@ -207,7 +240,7 @@ prices = df['now_cost'] / 10
 positions = df['p_position']
 clubs = df['team_name']
 names = df['name']
-
+p_params = get_params(st.experimental_get_query_params(),df)
 
 
 z = st.expander("Pick team:")
@@ -224,6 +257,7 @@ y = st.expander("Choose expected source:")
 evb = y.radio(
     "Expected value source",
     ('Custom 1gw', 'Custom 3gw', 'Custom 5gw', 'FPL-API'),
+    index=3,
     horizontal=True)
 if(evb=='Custom 1gw'):
     df['future_cs'] = df.apply(lambda x: x.cs_gw2, axis=1)
@@ -256,17 +290,21 @@ elif(evb=='FPL-API'):
 opt_btn = st.button("Generate optimal team")
 v_pitch = st.container()
 
-stg = g1.multiselect("Starting goalie",list(df[df.p_position==1].name), max_selections=1)
-sug = g2.multiselect("Sub goalie",[each for each in df[df.p_position==1].name if each not in stg],max_selections=1)
+stg = g1.multiselect("Starting goalie",list(df[df.p_position==1].name),max_selections=1,
+default=p_params['t1_1'])
+sug = g2.multiselect("Sub goalie",[each for each in df[df.p_position==1].name if each not in stg],max_selections=1,default=p_params['t1_2'])
 
-std = d1.multiselect("Starting defenders",list(df[df.p_position==2].name),max_selections=5)
-sud = d2.multiselect("Sub defenders",[each for each in df[df.p_position==2].name if each not in std],max_selections=5)
+std = d1.multiselect("Starting defenders",list(df[df.p_position==2].name),max_selections=5,
+default=p_params['t2_1'])
+sud = d2.multiselect("Sub defenders",[each for each in df[df.p_position==2].name if each not in std],max_selections=5,default=p_params['t2_2'])
 
-stm = m1.multiselect("Starting midfielders",list(df[df.p_position==3].name),max_selections=5)
-sum = m2.multiselect("Sub midfielders",[each for each in df[df.p_position==3].name if each not in stm],max_selections=5)
+stm = m1.multiselect("Starting midfielders",list(df[df.p_position==3].name),max_selections=5,
+default=p_params['t3_1'])
+sum = m2.multiselect("Sub midfielders",[each for each in df[df.p_position==3].name if each not in stm],max_selections=5,default=p_params['t3_2'])
 
-stf = f1.multiselect("Starting forwards",list(df[df.p_position==4].name),max_selections=3)
-suf = f2.multiselect("Sub forwards",[each for each in df[df.p_position==4].name if each not in stf],max_selections=3)
+stf = f1.multiselect("Starting forwards",list(df[df.p_position==4].name),max_selections=3,
+default=p_params['t4_1'])
+suf = f2.multiselect("Sub forwards",[each for each in df[df.p_position==4].name if each not in stf],max_selections=3,default=p_params['t4_2'])
 
 
 _names = stg + sug + std + sud + stm + sum + stf + suf
@@ -279,9 +317,19 @@ _statuses = (["starting"] * len(stg)) + (["bench"] * len(sug)) + \
             (["starting"] * len(stm)) + (["bench"] * len(sum)) + \
             (["starting"] * len(stf)) + (["bench"] * len(suf))
 
+team_df = pd.DataFrame({"name":_names,"position":_positions,"status":_statuses})
+select_df = pd.merge(df,team_df,how='left',
+        left_on=["p_position","name"],
+        right_on=["position","name"])
+my_players = select_df.index[select_df.status=='starting'].tolist()
+my_subs = select_df.index[select_df.status=='bench'].tolist()
+assert_picks = assert_team(select_df[select_df.status.isin(['starting','bench'])])
 
-if(len(set(stg + sug))==2 and len(set(std + sud))==5 and len(set(stm + sum))==5 and len(set(stf + suf))==3):
+#if(z.button("Save team")):
+#    p_params = create_params(select_df[select_df.status.isin(['starting','bench'])])
+#    st.write(p_params)
 
+if(all(assert_picks.values())==True):
     team_df = pd.DataFrame({"name":_names,"position":_positions,"status":_statuses})
     select_df = pd.merge(df,team_df,how='left',
             left_on=["p_position","name"],
@@ -293,7 +341,7 @@ if(len(set(stg + sug))==2 and len(set(std + sud))==5 and len(set(stm + sum))==5 
 
     nsubs = num1.number_input('Choose number of transfers',value=1)
     budget = num2.number_input('Choose budget in millions',value=100)
-    press = btn.button("Generate Team!")
+    press = btn.button("Optimize my team!")
     if(press):
         decisions, captain_decisions,sub_decisions = ot.select_team(
                                                 expected_scores,
