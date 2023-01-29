@@ -5,7 +5,6 @@ import expected_value as ev
 import fetch_data as fd
 import datetime
 
-
 st.set_page_config(page_title="FPL-Optimizer",page_icon="https://fantasy.premierleague.com/img/favicons/favicon-32x32.png")
 
 with open('image.svg', 'r') as file:
@@ -227,10 +226,12 @@ def create_params(df):
         t4_1 = list(df[df.p_position==4][df.status=='starting'].name),
         t4_2 = list(df[df.p_position==4][df.status=='bench'].name)
     )
-    return True
+    df['url_param'] = df.apply(lambda x: 't' + str(x.p_position) + '_1=' + x['name'] if x.status=='starting' else 't' + str(x.p_position) + '_2=' + x['name'], axis=1)
+    url = list(df.url_param.values.tolist())
+    return 'http://localhost:8501/?' + '&'.join(url)
 
 
-    
+
 df = fetch_data(datetime.date.today() + datetime.timedelta(days=1))
 df.columns = [x.lower() for x in df.columns]
 df['good_games'] = df['good_games'].astype(int)
@@ -242,9 +243,8 @@ clubs = df['team_name']
 names = df['name']
 p_params = get_params(st.experimental_get_query_params(),df)
 
-
 z = st.expander("Pick team:")
-
+z.write("Select a full team to be able to optimize your transfers!")
 z.write("")
 _,g1,g2,_ = z.columns([4,4,4,4])
 _,d1,d2,_ = z.columns([1,10,4,1])
@@ -325,11 +325,12 @@ my_players = select_df.index[select_df.status=='starting'].tolist()
 my_subs = select_df.index[select_df.status=='bench'].tolist()
 assert_picks = assert_team(select_df[select_df.status.isin(['starting','bench'])])
 
-#if(z.button("Save team")):
-#    p_params = create_params(select_df[select_df.status.isin(['starting','bench'])])
-#    st.write(p_params)
+
 
 if(all(assert_picks.values())==True):
+    if(z.button("Save team")):
+        p_params = create_params(select_df[select_df.status.isin(['starting','bench'])])
+        z.write(p_params)
     team_df = pd.DataFrame({"name":_names,"position":_positions,"status":_statuses})
     select_df = pd.merge(df,team_df,how='left',
             left_on=["p_position","name"],
