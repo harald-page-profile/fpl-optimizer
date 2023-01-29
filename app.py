@@ -228,7 +228,7 @@ def create_params(df):
     )
     df['url_param'] = df.apply(lambda x: 't' + str(x.p_position) + '_1=' + x['name'] if x.status=='starting' else 't' + str(x.p_position) + '_2=' + x['name'], axis=1)
     url = list(df.url_param.values.tolist())
-    return 'http://localhost:8501/?' + '&'.join(url)
+    return 'https://fpl-optimizer.streamlit.app/?' + '&'.join(url)
 
 
 
