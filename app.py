@@ -83,6 +83,17 @@ st.markdown(
       border-radius:0px 0px 5px 5px;
       width: 90%;
     }
+    footer {visibility: hidden;}
+    .footer {
+        position:fixed;
+        bottom:0;
+        width:100%;
+        font-weight:bold;
+    }
+    .footer > span > a {
+            color: #26aae2;
+        text-decoration: none;
+    }
     </style>"""
     ,
     unsafe_allow_html=True
@@ -407,3 +418,6 @@ if(opt_btn):
     res = res[res.status.isin(["starting","bench"])]
     pitch = generate_pitch(res)
     v_pitch.markdown(pitch,unsafe_allow_html=True)
+
+
+st.markdown('<div class="footer"><span>Powered by <a href="https://www.snowflake.com">Snowflake</a> </span><image src="https://companieslogo.com/img/orig/SNOW-35164165.png?t=1634190631" width=30px style="font-family:Roboto;font-size:20px;"><br><br></div>', unsafe_allow_html=True)
