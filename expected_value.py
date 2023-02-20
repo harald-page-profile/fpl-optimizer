@@ -3,6 +3,8 @@ import pandas as pd
 
 def expected_score(x):
     #Points for minutes played
+    if((x.future_cs+x.future_eg) == 0):
+        return 0
     minutes = round(x.minutes/90)
     points = 0
     points += minutes
